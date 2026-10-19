@@ -11,6 +11,7 @@ Usage:
 Input: a JSON array, each item:
   {"text": str required, "category": str required, "event_date": str optional,
    "project": str optional, "dedupe": bool optional, "force": bool optional,
+   "type": str optional (her.memory memory type: general/event/emotional/preference),
    "allow_credential_shaped": bool optional (bypass the credential gate for
    genuinely-shaped prose; the bypass is reported either way)}
 
@@ -45,7 +46,7 @@ sys.path.insert(0, BASE_DIR)
 
 from add_semantic import (  # noqa: E402
     embed_text, _stamp_version, normalize_project_key, find_duplicate,
-    PROJECT_KEY_FIELD, credential_gate,
+    PROJECT_KEY_FIELD, credential_gate, VALID_TYPES,
 )
 from memory_common import (  # noqa: E402
     memory_file_lock, load_memories_safe, append_memories_safe,
@@ -116,10 +117,16 @@ def run_batch(batch_path):
             results.append({"index": i, "status": "fail", "reason": "embed_fail"})
             n_fail += 1
             continue
+        entry_type = (item.get("type") or "general")
+        if not isinstance(entry_type, str) or entry_type.strip().lower() not in VALID_TYPES:
+            results.append({"index": i, "status": "fail",
+                            "reason": f"bad_type:{entry_type!r}"})
+            n_fail += 1
+            continue
         now = datetime_iso = __import__("datetime").datetime.now().isoformat()
         entry = {
             "id": f"mem_{int(time.time() * 1000)}_{os.getpid()}_{i}",
-            "text": text, "type": "general", "category": category,
+            "text": text, "type": entry_type.strip().lower(), "category": category,
             "embedding": emb, "timestamp": now, "energy": 2.0,
             "last_hit": now, "archived": False,
         }

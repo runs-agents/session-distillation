@@ -58,6 +58,7 @@ def _resolve_memory_file():
 OLLAMA_URL = os.environ.get("OLLAMA_URL") or "http://localhost:11434/api/embeddings"
 EMBED_MODEL = os.environ.get("EMBED_MODEL") or "bge-m3"
 PROJECT_KEY_FIELD = "project_key"
+VALID_TYPES = ("general", "event", "emotional", "preference")  # her.memory's memory types
 
 
 # Credential-shaped strings are refused at the door: a key that lands in a
@@ -230,7 +231,8 @@ def _stamp_version():
 def add_semantic(text: str, category: str, event_date: str = None,
                  project: str = None, dedupe: bool = False,
                  force: bool = False, supersede: bool = False,
-                 allow_credential_shaped: bool = False) -> bool:
+                 allow_credential_shaped: bool = False,
+                 mem_type: str = "general") -> bool:
     store = _resolve_memory_file()
     text = (text or "").strip()
     if not text:
@@ -271,11 +273,15 @@ def add_semantic(text: str, category: str, event_date: str = None,
     if emb is None:
         return False
 
+    entry_type = (mem_type or "general").strip().lower()
+    if entry_type not in VALID_TYPES:
+        print(f"[error] unknown type '{mem_type}' — valid: {VALID_TYPES}", file=sys.stderr)
+        return False
     now = datetime.now().isoformat()
     entry = {
         "id": f"mem_{int(time.time() * 1000)}_{os.getpid()}",
         "text": text,
-        "type": "general",
+        "type": entry_type,
         "category": category,
         "embedding": emb,
         "timestamp": now,
@@ -375,10 +381,14 @@ if __name__ == "__main__":
                         help="archive same-key old entries + write new (time-evolving facts)")
     parser.add_argument("--allow-credential-shaped", action="store_true",
                         help="bypass the credential gate for genuinely-shaped prose (logged)")
+    parser.add_argument("--type", dest="mem_type", default="general",
+                        choices=list(VALID_TYPES),
+                        help="memory type (her.memory consumes: general/event/emotional/preference)")
     args = parser.parse_args()
 
     ok = add_semantic(args.text, args.category, args.date,
                       project=args.project, dedupe=args.dedupe, force=args.force,
                       supersede=args.supersede,
-                      allow_credential_shaped=args.allow_credential_shaped)
+                      allow_credential_shaped=args.allow_credential_shaped,
+                      mem_type=args.mem_type)
     sys.exit(0 if ok else 1)

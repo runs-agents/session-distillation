@@ -4,6 +4,11 @@
 *.tmp
 *.corrupt.bak
 *.report.json
+# The export file is a COMPLETE raw conversation dump — never commit it.
+_pending_distill*.json
 # distill_config.json holds your personal keyword vocabulary — do not publish it.
 distill_config.json
 __pycache__/
+# Recommended: keep runtime artifacts (ledger, batch inputs, exports) OUTSIDE
+# the repo directory entirely — names vary, so gitignore is a safety net, not
+# the primary defense.
