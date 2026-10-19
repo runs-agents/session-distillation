@@ -1,0 +1,9 @@
+# Your memory data never leaves this machine — keep it out of git too.
+*.jsonl
+*.lock
+*.tmp
+*.corrupt.bak
+*.report.json
+# distill_config.json holds your personal keyword vocabulary — do not publish it.
+distill_config.json
+__pycache__/
