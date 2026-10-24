@@ -72,7 +72,7 @@ _CRED_PATTERNS = (
     _re.compile(r"(?<![A-Za-z0-9])AIza[0-9A-Za-z_-]{30,}"),        # Google API keys
     _re.compile(r"(?<![A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}"),  # Slack tokens
     _re.compile(r"(?<![A-Za-z0-9])AKIA[0-9A-Z]{16}"),             # AWS access key id
-    _re.compile(r"(?i)(?<![A-Za-z0-9])(?:api[_-]?key|secret|password|access[_-]?token)[_a-z0-9]*\s*[=:]\s*\S{8,}"),  # KEY=value (value: 8+ non-space chars — prose like "password: it was..." passes)
+    _re.compile(r"(?i)(?<![A-Za-z0-9])(?:api[_-]?key|secret|password|access[_-]?token)[_a-z0-9]*\s*[=:]\s*[!-~]{8,}"),  # KEY=value (value: 8+ ASCII-printable chars; CJK fix: \S matched whole Chinese sentences — CJK prose has no spaces, so "password: 它当时是..." was falsely rejected)
     _re.compile(r"[a-zA-Z][a-zA-Z0-9+.-]*://\S+?:\S+?@"),        # credentialed URL
     _re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._-]{20,}"),          # Authorization header
 )
